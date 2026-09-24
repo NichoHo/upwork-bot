@@ -1,12 +1,30 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import { requestMagicLink } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldGroup, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+
+const CALLBACK_ERRORS: Record<string, string> = {
+  link_invalid:
+    "That link already expired or was already opened (some email apps open links automatically to scan them). Request a new one and click it right away.",
+  provisioning_failed:
+    "Something went wrong signing you in. Try again, and tell Nicholas if it keeps happening.",
+};
+
+function CallbackError() {
+  const message = CALLBACK_ERRORS[useSearchParams().get("error") ?? ""];
+  if (!message) return null;
+  return (
+    <Alert variant="destructive" className="mb-4">
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
+  );
+}
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(requestMagicLink, {
@@ -25,6 +43,9 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Suspense fallback={null}>
+            <CallbackError />
+          </Suspense>
           {state.sent ? (
             <Alert>
               <AlertDescription>

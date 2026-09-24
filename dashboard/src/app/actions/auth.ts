@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export async function requestMagicLink(
   _prevState: { error: string | null; sent: boolean },
@@ -12,10 +13,20 @@ export async function requestMagicLink(
     return { error: "Enter an email address.", sent: false };
   }
 
+  // Build the redirect from the request's own origin rather than Supabase's
+  // single configured Site URL, so the same code works for local dev and
+  // the deployed app. The target still has to be on Supabase's allowed
+  // redirect URL list (Auth > URL Configuration) or exchangeCodeForSession
+  // will reject it.
+  const origin = (await headers()).get("origin");
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: true },
+    options: {
+      shouldCreateUser: true,
+      emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
+    },
   });
 
   if (error) {

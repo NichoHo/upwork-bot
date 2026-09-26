@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { requireMember, signOut } from "@/app/actions/auth";
+import { requireMember } from "@/app/actions/auth";
 import { getDraft, getEditedJobIds, getJob, getLatestRun, getRejectedToday, getShortlistedJobs } from "@/lib/queue";
 import { formatScreeningAnswers, isOlderThan } from "@/lib/format";
 import { JobDetail } from "@/components/queue/job-detail";
 import { QueueShell } from "@/components/queue/queue-shell";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+import { AppHeader } from "@/components/app-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const STALE_AFTER_MS = 2 * 60 * 60 * 1000;
@@ -33,22 +32,7 @@ export default async function QueuePage({
 
   return (
     <main className="flex min-h-full flex-1 flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <div>
-          <h1 className="text-sm font-medium">Proposal Desk</h1>
-          <p className="text-muted-foreground font-mono text-xs">
-            {member.display_name} &middot; {member.upwork_account}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <form action={signOut}>
-            <Button variant="outline" size="sm" type="submit">
-              Sign out
-            </Button>
-          </form>
-        </div>
-      </header>
+      <AppHeader member={member} />
 
       {isStale && latestRun?.finished_at && (
         <Alert variant="destructive" className="m-0 rounded-none border-x-0 border-t-0">

@@ -1,4 +1,12 @@
-import type { Job, ScreeningAnswer } from "@/lib/types";
+import type { Job, Outcome, OutcomeStatus, ScreeningAnswer } from "@/lib/types";
+
+export function deriveOutcomeStatus(outcome: Outcome): OutcomeStatus {
+  if (outcome.hired_at) return "won";
+  if (outcome.closed_at) return "lost";
+  if (outcome.interviewed_at) return "interviewing";
+  if (outcome.replied_at) return "replied";
+  return "waiting";
+}
 
 // The Upwork MCP wraps client-written text in these tags so an LLM treats it
 // as data, not instructions (see CLAUDE.md hard constraint #5). They carry no

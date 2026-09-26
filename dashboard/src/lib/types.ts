@@ -64,3 +64,24 @@ export type Run = {
   jobs_shortlisted: number | null;
   error: string | null;
 };
+
+export type Member = {
+  user_id: string;
+  email: string;
+  display_name: string;
+  upwork_account: BidAccount;
+};
+
+export type OutcomeStatus = "waiting" | "replied" | "interviewing" | "won" | "lost";
+
+export type Outcome = {
+  job_id: string;
+  submitted_at: string;
+  submitted_by: string | null;
+  connects_spent: number | null;
+  replied_at: string | null;
+  interviewed_at: string | null;
+  hired_at: string | null;
+  closed_at: string | null;
+  notes: string | null;
+};

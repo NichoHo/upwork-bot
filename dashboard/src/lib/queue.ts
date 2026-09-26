@@ -76,3 +76,20 @@ export async function getRejectedToday(): Promise<Job[]> {
   if (error) throw error;
   return data;
 }
+
+// Rejection review (BLUEPRINT.md §7 Phase 4): every rejected job, highest
+// score first, so the ones that almost made it (and might be worth a
+// second look at the rubric) float to the top. Capped rather than
+// paginated; a 2-person tool doesn't accumulate enough rejects to need
+// real pagination before this needs revisiting.
+export async function getAllRejected(limit = 200): Promise<Job[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("jobs")
+    .select("*")
+    .eq("status", "rejected")
+    .order("score", { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (error) throw error;
+  return data;
+}

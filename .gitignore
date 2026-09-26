@@ -8,6 +8,9 @@ dashboard/*.tsbuildinfo
 dashboard/next-env.d.ts
 dashboard/.env*
 
+# hunter: local secrets and regenerated-per-run working files
+.hunter/
+
 # misc
 .DS_Store
 Thumbs.db

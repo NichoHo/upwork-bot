@@ -12,6 +12,23 @@ export async function getShortlistedJobs(): Promise<Job[]> {
   return data;
 }
 
+// Job ids whose draft has been hand-edited, for the amber "Draft edited"
+// row state (BLUEPRINT.md §6). A plain edited_by-not-null flag per job,
+// fetched separately rather than joined, since the join only ever needs
+// this one boolean and a separate query is simpler than shaping a nested
+// select result.
+export async function getEditedJobIds(jobIds: string[]): Promise<string[]> {
+  if (jobIds.length === 0) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("drafts")
+    .select("job_id")
+    .in("job_id", jobIds)
+    .not("edited_by", "is", null);
+  if (error) throw error;
+  return data.map((d) => d.job_id);
+}
+
 export async function getJob(id: string): Promise<Job | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

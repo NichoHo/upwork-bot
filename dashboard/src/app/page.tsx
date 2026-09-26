@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireMember, signOut } from "@/app/actions/auth";
-import { getDraft, getJob, getLatestRun, getRejectedToday, getShortlistedJobs } from "@/lib/queue";
+import { getDraft, getEditedJobIds, getJob, getLatestRun, getRejectedToday, getShortlistedJobs } from "@/lib/queue";
 import { formatScreeningAnswers, isOlderThan } from "@/lib/format";
 import { JobDetail } from "@/components/queue/job-detail";
 import { QueueShell } from "@/components/queue/queue-shell";
@@ -22,6 +22,7 @@ export default async function QueuePage({
     getLatestRun(),
     getRejectedToday(),
   ]);
+  const editedJobIds = await getEditedJobIds(jobs.map((j) => j.id));
 
   const activeId = selectedJobId ?? jobs[0]?.id ?? null;
   const [selectedJob, draft] = activeId
@@ -75,6 +76,7 @@ export default async function QueuePage({
         <QueueShell
           jobs={jobs}
           selectedId={activeId}
+          editedJobIds={editedJobIds}
           coverLetter={draft?.cover_letter ?? null}
           answersText={draft?.screening_answers?.length ? formatScreeningAnswers(draft.screening_answers) : null}
         >

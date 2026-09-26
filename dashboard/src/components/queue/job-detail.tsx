@@ -1,12 +1,14 @@
 import { ArrowSquareOutIcon, WarningIcon } from "@phosphor-icons/react/dist/ssr";
 import { Separator } from "@/components/ui/separator";
 import { CopyButton } from "@/components/queue/copy-button";
+import { EditableCoverLetter } from "@/components/queue/editable-cover-letter";
 import { formatAge, formatBudget, formatClientRecord, formatScreeningAnswers, stripUntrustedTags } from "@/lib/format";
 import type { Draft, Job } from "@/lib/types";
 
 export function JobDetail({ job, draft }: { job: Job; draft: Draft | null }) {
   const clientRecord = formatClientRecord(job);
   const answersText = formatScreeningAnswers(draft?.screening_answers);
+  const bothText = draft?.cover_letter ? `${draft.cover_letter}\n\n${answersText}` : answersText;
 
   return (
     <div className="flex flex-col gap-5 p-6">
@@ -102,15 +104,7 @@ export function JobDetail({ job, draft }: { job: Job; draft: Draft | null }) {
       )}
 
       {draft?.cover_letter && (
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-muted-foreground text-xs">
-              COVER LETTER
-            </span>
-            <CopyButton text={draft.cover_letter} label="Copy" />
-          </div>
-          <p className="text-sm whitespace-pre-wrap">{draft.cover_letter}</p>
-        </div>
+        <EditableCoverLetter jobId={job.id} coverLetter={draft.cover_letter} />
       )}
 
       {draft?.screening_answers && draft.screening_answers.length > 0 && (
@@ -119,7 +113,10 @@ export function JobDetail({ job, draft }: { job: Job; draft: Draft | null }) {
             <span className="text-muted-foreground text-xs">
               SCREENING ({draft.screening_answers.length})
             </span>
-            <CopyButton text={answersText} label="Copy all" />
+            <div className="flex gap-2">
+              <CopyButton text={answersText} label="Copy all" />
+              {draft.cover_letter && <CopyButton text={bothText} label="Copy both" />}
+            </div>
           </div>
           <div className="flex flex-col gap-3">
             {draft.screening_answers.map((qa, i) => (

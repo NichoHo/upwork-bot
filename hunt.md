@@ -33,7 +33,7 @@ Notes on filter behaviour, confirmed by testing:
 - `proposals_max` is loose. Re-check `proposals_tier` yourself and drop anything above "10 to 15".
 - `budget_min` only filters fixed-price; hourly posts ignore it. Check rates yourself.
 - `title` cannot be combined with `query` or `sort: "relevance"`.
-- If a search errors, note it and carry on with the rest. Never abort the run.
+- If a search call fails (timeout, rate limit, transient error), retry it once. If it fails again, skip that one search and carry on with the rest. Never abort the whole run over one failed call.
 
 Keep a running count of every job you looked at across all eight searches (`jobs_seen`), even duplicates across searches count once by job id.
 
@@ -46,6 +46,8 @@ Aim to leave at most 8 candidates. If more survive, keep the 8 with the best pro
 ## Stage 3 — verify (this is the step that saves Connects)
 
 Run `find_jobs action=get` on each survivor. This is also the point where a job becomes worth recording: every job you call `get` on gets a row in the output, whether it survives or not.
+
+If a `get` call fails, retry it once before giving up on that job. A candidate that survived Stage 2 is worth one retry; losing it to a transient error costs more than the retry does. If it still fails, drop that one job (it never gets a row, since there's no data to score it on) and continue with the rest. Never abort the whole run over one failed call.
 
 Hard skip, no exceptions:
 - `activityStat.jobActivity.totalHired` >= `contractTerms.personsToHire`

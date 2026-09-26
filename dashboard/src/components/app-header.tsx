@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: "/", label: "Queue" },
   { href: "/sent", label: "Sent" },
   { href: "/rejected", label: "Rejected" },
+  { href: "/runs", label: "Runs" },
   { href: "/settings", label: "Settings" },
 ];
 

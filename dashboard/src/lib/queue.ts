@@ -63,6 +63,17 @@ export async function getLatestRun(): Promise<Run | null> {
   return data;
 }
 
+export async function getRuns(limit = 100): Promise<Run[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("runs")
+    .select("*")
+    .order("started_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data;
+}
+
 export async function getRejectedToday(): Promise<Job[]> {
   const supabase = await createClient();
   const startOfDay = new Date();

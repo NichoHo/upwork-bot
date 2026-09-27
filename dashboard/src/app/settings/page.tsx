@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireMember } from "@/app/actions/auth";
 import { getSetting } from "@/lib/settings";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
 import { SettingsEditor } from "@/components/settings/settings-editor";
 
 export default async function SettingsPage() {
@@ -10,9 +10,8 @@ export default async function SettingsPage() {
   if (!profile) notFound();
 
   return (
-    <main className="flex min-h-full flex-1 flex-col">
-      <AppHeader member={member} />
+    <AppShell member={member} title="Settings">
       <SettingsEditor settingKey="profile" initialValue={profile.value} updatedAt={profile.updatedAt} />
-    </main>
+    </AppShell>
   );
 }

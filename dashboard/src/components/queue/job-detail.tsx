@@ -1,9 +1,16 @@
 import { ArrowSquareOutIcon, WarningIcon } from "@phosphor-icons/react/dist/ssr";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/queue/copy-button";
 import { EditableCoverLetter } from "@/components/queue/editable-cover-letter";
 import { formatAge, formatBudget, formatClientRecord, formatScreeningAnswers, stripUntrustedTags } from "@/lib/format";
-import type { Draft, Job } from "@/lib/types";
+import type { Draft, Job, JobStatus } from "@/lib/types";
+
+const STATUS_VARIANT: Record<JobStatus, "primary" | "success" | "default"> = {
+  shortlisted: "primary",
+  applied: "success",
+  rejected: "default",
+  expired: "default",
+};
 
 export function JobDetail({ job, draft }: { job: Job; draft: Draft | null }) {
   const clientRecord = formatClientRecord(job);
@@ -13,7 +20,10 @@ export function JobDetail({ job, draft }: { job: Job; draft: Draft | null }) {
   return (
     <div className="flex flex-col gap-5 p-6">
       <div>
-        <h2 className="text-base font-medium">{job.title}</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-base font-medium">{job.title}</h2>
+          <Badge variant={STATUS_VARIANT[job.status]}>{job.status}</Badge>
+        </div>
         <a
           href={job.url}
           target="_blank"
@@ -25,13 +35,13 @@ export function JobDetail({ job, draft }: { job: Job; draft: Draft | null }) {
         </a>
       </div>
 
-      <div>
+      <div className="rounded-lg border bg-card p-4">
         {job.score !== null && (
           <div className="mb-2">
-            <span className="font-mono text-3xl font-medium">{job.score}</span>
-            <div className="bg-border mt-1 h-px w-24 overflow-hidden">
+            <span className="font-mono text-3xl font-medium tabular-nums">{job.score}</span>
+            <div className="bg-border mt-1.5 h-1 w-28 overflow-hidden rounded-full">
               <div
-                className="bg-primary h-full"
+                className="bg-primary h-full rounded-full"
                 style={{ width: `${job.score}%` }}
               />
             </div>
@@ -43,16 +53,14 @@ export function JobDetail({ job, draft }: { job: Job; draft: Draft | null }) {
         </p>
       </div>
 
-      <Separator />
-
-      <div className="grid grid-cols-2 gap-4 font-mono text-xs">
-        <div>
-          <div className="text-muted-foreground">Client</div>
-          <div>{clientRecord ?? "no history"}</div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-lg border bg-card p-3">
+          <div className="text-muted-foreground text-xs">Client</div>
+          <div className="font-mono text-xs">{clientRecord ?? "no history"}</div>
         </div>
-        <div>
-          <div className="text-muted-foreground">Bid as</div>
-          <div className="capitalize">
+        <div className="rounded-lg border bg-card p-3">
+          <div className="text-muted-foreground text-xs">Bid as</div>
+          <div className="font-mono text-xs capitalize">
             {job.bid_account ?? "unset"}
             {job.connects_cost !== null ? ` · ${job.connects_cost} connects` : ""}
           </div>

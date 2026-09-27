@@ -1,11 +1,19 @@
 import { requireMember } from "@/app/actions/auth";
 import { getRuns } from "@/lib/queue";
 import { isOlderThan } from "@/lib/format";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { Run } from "@/lib/types";
 
 const STALE_AFTER_MS = 90 * 60 * 1000;
+
+const STATUS_VARIANT: Record<Run["status"], "success" | "warning" | "destructive"> = {
+  ok: "success",
+  partial: "warning",
+  failed: "destructive",
+};
 
 function formatDuration(startedAt: string, finishedAt: string | null): string {
   if (!finishedAt) return "still running";
@@ -19,45 +27,64 @@ export default async function RunsPage() {
   const isStale = !!runs[0]?.started_at && isOlderThan(runs[0].started_at, STALE_AFTER_MS);
 
   return (
-    <main className="flex min-h-full flex-1 flex-col">
-      <AppHeader member={member} />
-      {isStale && (
-        <Alert variant="destructive" className="m-0 rounded-none border-x-0 border-t-0">
-          <AlertDescription>
-            No run has started in the last 90+ minutes. A Telegram alert should already have
-            fired; check the hunter machine.
-          </AlertDescription>
-        </Alert>
-      )}
-      <div className="flex flex-1 flex-col divide-y overflow-y-auto">
+    <AppShell member={member} title="Runs">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {isStale && (
+          <Alert variant="destructive" className="m-0 rounded-none border-x-0 border-t-0">
+            <AlertDescription>
+              No run has started in the last 90+ minutes. A Telegram alert should already have
+              fired; check the hunter machine.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {runs.length === 0 ? (
           <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
             No runs yet.
           </div>
         ) : (
-          runs.map((run) => (
-            <div key={run.id} className="flex items-center justify-between gap-4 px-6 py-3">
-              <div className="font-mono text-xs">
-                <div>{new Date(run.started_at).toLocaleString()}</div>
-                <div className="text-muted-foreground">{formatDuration(run.started_at, run.finished_at)}</div>
-              </div>
-              <div className="font-mono text-xs">
-                {run.jobs_seen ?? "-"} seen &middot; {run.jobs_scored ?? "-"} scored &middot;{" "}
-                {run.jobs_shortlisted ?? "-"} shortlisted
-              </div>
-              <div
-                className={cn(
-                  "font-mono text-xs capitalize",
-                  run.status === "failed" && "text-destructive",
-                )}
-              >
-                {run.status}
-              </div>
-              {run.error && <div className="text-destructive max-w-sm truncate text-xs">{run.error}</div>}
-            </div>
-          ))
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Started</TableHead>
+                <TableHead>Duration</TableHead>
+                <TableHead className="text-right">Seen</TableHead>
+                <TableHead className="text-right">Scored</TableHead>
+                <TableHead className="text-right">Shortlisted</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Error</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {runs.map((run) => (
+                <TableRow key={run.id}>
+                  <TableCell className="font-mono text-xs whitespace-nowrap">
+                    {new Date(run.started_at).toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground font-mono text-xs whitespace-nowrap">
+                    {formatDuration(run.started_at, run.finished_at)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {run.jobs_seen ?? "-"}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {run.jobs_scored ?? "-"}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {run.jobs_shortlisted ?? "-"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={STATUS_VARIANT[run.status]}>{run.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-destructive max-w-sm truncate text-xs">
+                    {run.error ?? ""}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </div>
-    </main>
+    </AppShell>
   );
 }

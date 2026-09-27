@@ -142,36 +142,36 @@ export function QueueShell({
   }, [jobs, selectedId, coverLetter, answersText, select, flash, pending, doMarkSubmitted, promptAndSkip]);
 
   return (
-    <div className="grid flex-1 grid-cols-[320px_1fr] overflow-hidden">
-      <div className="flex flex-col overflow-y-auto border-r">
+    <div className="grid min-h-0 flex-1 grid-cols-[320px_1fr] overflow-hidden">
+      <div className="flex min-h-0 flex-col overflow-y-auto border-r">
         {jobs.map((job) => (
           <button
             key={job.id}
             onClick={() => select(job.id)}
             className={cn(
-              "hover:bg-accent focus-visible:ring-ring flex flex-col gap-0.5 border-b border-l-[3px] px-4 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset",
+              "hover:bg-accent/60 focus-visible:ring-ring flex items-center gap-3 border-b border-l-[3px] px-3 py-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset",
               editedJobIds.includes(job.id) ? EDITED_BORDER : STATE_BORDER[job.status],
               job.id === selectedId && "bg-accent",
             )}
           >
-            <div className="flex items-baseline gap-2">
-              <span className="font-mono text-lg font-medium">
-                {job.score ?? "-"}
-              </span>
-              <span className="truncate text-sm">{job.title}</span>
-            </div>
-            <span className="text-muted-foreground font-mono text-xs">
-              {formatBudget(job)} &middot; {job.proposals_tier ?? "?"} &middot;{" "}
-              {formatAge(job.published_at)}
+            <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md font-mono text-sm font-semibold tabular-nums">
+              {job.score ?? "-"}
             </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="truncate text-sm">{job.title}</span>
+              <span className="text-muted-foreground font-mono text-xs">
+                {formatBudget(job)} &middot; {job.proposals_tier ?? "?"} &middot;{" "}
+                {formatAge(job.published_at)}
+              </span>
+            </div>
           </button>
         ))}
       </div>
 
-      <div className="overflow-y-auto">
+      <div className="min-h-0 overflow-y-auto">
         {children}
         {selectedId && (
-          <div className="flex items-center gap-2 border-t p-4">
+          <div className="bg-muted/30 flex items-center gap-2 border-t p-4">
             <Button size="sm" disabled={pending} onClick={() => doMarkSubmitted(selectedId)}>
               Mark as submitted
             </Button>

@@ -4,7 +4,7 @@ import { getDraft, getEditedJobIds, getJob, getLatestRun, getRejectedToday, getS
 import { formatScreeningAnswers, isOlderThan } from "@/lib/format";
 import { JobDetail } from "@/components/queue/job-detail";
 import { QueueShell } from "@/components/queue/queue-shell";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const STALE_AFTER_MS = 2 * 60 * 60 * 1000;
@@ -31,9 +31,7 @@ export default async function QueuePage({
   const isStale = !!latestRun?.finished_at && isOlderThan(latestRun.finished_at, STALE_AFTER_MS);
 
   return (
-    <main className="flex min-h-full flex-1 flex-col">
-      <AppHeader member={member} />
-
+    <AppShell member={member} title="Queue">
       {isStale && latestRun?.finished_at && (
         <Alert variant="destructive" className="m-0 rounded-none border-x-0 border-t-0">
           <AlertDescription>
@@ -73,6 +71,6 @@ export default async function QueuePage({
           )}
         </QueueShell>
       )}
-    </main>
+    </AppShell>
   );
 }

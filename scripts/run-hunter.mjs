@@ -66,10 +66,17 @@ async function main() {
     "settings?key=eq.profile&select=value",
   );
   const jobRows = await supabase("jobs?select=id");
+  const shortlistedRows = await supabase(
+    "jobs?select=id&status=eq.shortlisted",
+  );
   writeFileSync(path.join(HUNTER_DIR, "profile.md"), profileRow.value);
   writeFileSync(
     path.join(HUNTER_DIR, "seen.txt"),
     jobRows.map((r) => r.id).join("\n") + (jobRows.length ? "\n" : ""),
+  );
+  writeFileSync(
+    path.join(HUNTER_DIR, "shortlisted.json"),
+    JSON.stringify(shortlistedRows),
   );
   rmSync(OUTPUT_PATH, { force: true });
 
@@ -191,6 +198,18 @@ async function main() {
     }
   }
 
+  // Jobs Stage 0 re-checked against live Upwork data and found no longer
+  // viable (proposals climbed, client hired someone, etc). The status
+  // filter guards against deleting a job someone applied to in the gap
+  // between Stage 0's read and this write.
+  const staleIds = output.stale_job_ids ?? [];
+  for (const id of staleIds) {
+    await supabase(
+      `jobs?id=eq.${encodeURIComponent(id)}&status=eq.shortlisted`,
+      { method: "DELETE", headers: { Prefer: "return=minimal" } },
+    ).catch((e) => console.error(`failed to delete stale job ${id}:`, e));
+  }
+
   if (shortlisted.length > 0) {
     const best = shortlisted.reduce((a, b) => (b.score > a.score ? b : a));
     const plural = shortlisted.length === 1 ? "" : "s";
@@ -200,7 +219,7 @@ async function main() {
   }
 
   console.log(
-    `Run complete: ${jobs.length} evaluated, ${shortlisted.length} shortlisted.`,
+    `Run complete: ${jobs.length} evaluated, ${shortlisted.length} shortlisted, ${staleIds.length} stale deleted.`,
   );
 }
 

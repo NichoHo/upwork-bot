@@ -47,7 +47,7 @@ async function telegram(text) {
   );
 }
 
-async function recordFailedRun(startedAt, finishedAt, error) {
+async function recordFailedRun(startedAt, finishedAt, error, costInfo = {}) {
   await supabase("runs", {
     method: "POST",
     body: JSON.stringify({
@@ -55,8 +55,22 @@ async function recordFailedRun(startedAt, finishedAt, error) {
       finished_at: finishedAt,
       status: "failed",
       error,
+      ...costInfo,
     }),
   }).catch((e) => console.error("failed to record failed run:", e));
+}
+
+// --output-format json wraps the run in {total_cost_usd, usage, ...} on
+// stdout. Parsed separately from run-output.json (the hunter's own file,
+// written via the Write tool): this is the CLI's own accounting, present
+// even when the hunter's file write fails or a rule inside hunt.md errors.
+function parseCostInfo(stdout) {
+  try {
+    const parsed = JSON.parse(stdout);
+    return { cost_usd: parsed.total_cost_usd ?? null, usage: parsed.usage ?? null };
+  } catch {
+    return { cost_usd: null, usage: null };
+  }
 }
 
 async function main() {
@@ -95,6 +109,8 @@ async function main() {
 
   const CLAUDE_ARGS = [
     "-p",
+    "--output-format",
+    "json",
     "--allowedTools",
     ALLOWED_TOOLS,
     "--disallowedTools",
@@ -145,10 +161,12 @@ async function main() {
     return;
   }
 
+  const costInfo = parseCostInfo(result.stdout ?? "");
+
   if (result.status !== 0) {
     const detail = `claude -p exited ${result.status}: ${(result.stderr ?? "").slice(0, 1000)}`;
     console.error(detail);
-    await recordFailedRun(startedAt, finishedAt, detail);
+    await recordFailedRun(startedAt, finishedAt, detail, costInfo);
     await telegram("Upwork hunter failed to run. Check the logs on the hunter machine.");
     process.exitCode = 1;
     return;
@@ -160,7 +178,7 @@ async function main() {
   } catch (err) {
     const detail = `no valid run-output.json: ${err.message}`;
     console.error(detail);
-    await recordFailedRun(startedAt, finishedAt, detail);
+    await recordFailedRun(startedAt, finishedAt, detail, costInfo);
     await telegram("Upwork hunter ran but produced no usable output. Check the logs.");
     process.exitCode = 1;
     return;
@@ -179,6 +197,7 @@ async function main() {
       jobs_seen: output.jobs_seen ?? jobs.length,
       jobs_scored: jobs.length,
       jobs_shortlisted: shortlisted.length,
+      ...costInfo,
     }),
   });
 

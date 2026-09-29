@@ -164,7 +164,9 @@ async function main() {
   const costInfo = parseCostInfo(result.stdout ?? "");
 
   if (result.status !== 0) {
-    const detail = `claude -p exited ${result.status}: ${(result.stderr ?? "").slice(0, 1000)}`;
+    // With --output-format json the CLI reports its own errors (subtype,
+    // result text) on stdout and leaves stderr empty.
+    const detail = `claude -p exited ${result.status}: ${(result.stderr ?? "").slice(0, 500)} | stdout: ${(result.stdout ?? "").slice(0, 1500)}`;
     console.error(detail);
     await recordFailedRun(startedAt, finishedAt, detail, costInfo);
     await telegram("Upwork hunter failed to run. Check the logs on the hunter machine.");

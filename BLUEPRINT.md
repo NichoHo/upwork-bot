@@ -88,6 +88,23 @@ If Nicholas's PC is asleep, no jobs are found. The dashboard shows the last
 run time so this is visible rather than silent. Accepted for now. If it
 becomes a problem, the hunter moves to a small always-on box.
 
+### Run steps
+
+`scripts/run-hunter.mjs` splits each run so the model only does the parts
+that need judgment:
+
+1. **Fetch** (Haiku): makes the eight searches, plus shortlist rechecks every
+   6 hours. The script reads the raw results from the CLI's stream-json
+   output; the model never re-types them.
+2. **Filter** (plain code, `scripts/hunter-filter.mjs`): seen, applied,
+   proposal tier, budget floor, age, dealbreaker keywords. Capped at 8.
+3. **Details** (Haiku): `get` on the survivors, then the data-only hard skips
+   (hired, offered, interviewing, hire rate, `can_apply`) in code.
+4. **Judge** (Sonnet, no tools): `hunt.md` plus `profile.md` plus the
+   remaining jobs. Proof match, red flags, scoring, drafting.
+
+Steps 3 and 4 are skipped when nothing survives, which is most runs.
+
 ### Run cadence
 
 Every 3 hours, around the clock. Each run costs roughly 1% of the Pro plan's

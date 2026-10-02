@@ -162,6 +162,7 @@ function runClaude({ label, model, prompt, tools }) {
     maxBuffer: 64 * 1024 * 1024,
     input: prompt,
     shell: true,
+    windowsHide: true,
   });
 
   if (result.error) {

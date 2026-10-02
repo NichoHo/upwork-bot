@@ -116,8 +116,11 @@ dashboard's stale banner fires after 4 hours without a run.
 Registered on the hunter machine with:
 
 ```
-schtasks /create /tn "Upwork Hunter" /sc hourly /mo 3 /st 07:00 /tr "node \"C:\Users\Nicholas Ho\Documents\Programming\Project\Upwork Bot\scripts\run-hunter.mjs\"" /f
+schtasks /create /tn "Upwork Hunter" /sc hourly /mo 3 /st 07:00 /tr "wscript.exe //B \"C:\Users\Nicholas Ho\Documents\Programming\Project\Upwork Bot\scripts\run-hunter.vbs\"" /f
 ```
+
+`run-hunter.vbs` starts `run-hunter.mjs` with a hidden window, so no Node
+console pops up on each run.
 
 `/f` overwrites an existing task with the same name. If the existing task has
 a different name, change its trigger in Task Scheduler instead (Triggers →

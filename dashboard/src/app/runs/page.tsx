@@ -1,13 +1,11 @@
 import { requireMember } from "@/app/actions/auth";
 import { getRuns } from "@/lib/queue";
-import { isOlderThan } from "@/lib/format";
+import { isOlderThan, STALE_AFTER_MS } from "@/lib/format";
 import { AppShell } from "@/components/app-shell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Run } from "@/lib/types";
-
-const STALE_AFTER_MS = 90 * 60 * 1000;
 
 const STATUS_VARIANT: Record<Run["status"], "success" | "warning" | "destructive"> = {
   ok: "success",
@@ -32,7 +30,7 @@ export default async function RunsPage() {
         {isStale && (
           <Alert variant="destructive" className="m-0 rounded-none border-x-0 border-t-0">
             <AlertDescription>
-              No run has started in the last 90+ minutes. A Telegram alert should already have
+              No run has started in the last four hours. A Telegram alert should already have
               fired; check the hunter machine.
             </AlertDescription>
           </Alert>

@@ -12,10 +12,31 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const HUNTER_DIR = path.join(ROOT, ".hunter");
 const OUTPUT_PATH = path.join(HUNTER_DIR, "run-output.json");
+const LAST_RECHECK_PATH = path.join(HUNTER_DIR, "last-recheck.txt");
 
 const config = JSON.parse(
   readFileSync(path.join(HUNTER_DIR, "config.json"), "utf8"),
 );
+
+// Stage 0 makes one Upwork `get` call per shortlisted job, so running it on
+// every 3-hourly run burns usage on jobs that rarely change that fast. Only
+// hand the hunter the shortlist when this long has passed since the last
+// recheck; otherwise it gets an empty list and skips Stage 0.
+const RECHECK_EVERY_MS = 6 * 60 * 60 * 1000;
+
+// Gathering, filtering and drafting don't need the largest model, and the
+// hunter runs on the Pro subscription's usage limits. Override with
+// HUNTER_MODEL in .hunter/config.json if drafts get noticeably worse.
+const MODEL = config.HUNTER_MODEL ?? "sonnet";
+
+function recheckDue() {
+  try {
+    const last = Date.parse(readFileSync(LAST_RECHECK_PATH, "utf8").trim());
+    return Number.isNaN(last) || Date.now() - last >= RECHECK_EVERY_MS;
+  } catch {
+    return true;
+  }
+}
 
 async function supabase(pathAndQuery, options = {}) {
   const res = await fetch(`${config.SUPABASE_URL}/rest/v1/${pathAndQuery}`, {
@@ -88,9 +109,10 @@ async function main() {
     path.join(HUNTER_DIR, "seen.txt"),
     jobRows.map((r) => r.id).join("\n") + (jobRows.length ? "\n" : ""),
   );
+  const doRecheck = recheckDue();
   writeFileSync(
     path.join(HUNTER_DIR, "shortlisted.json"),
-    JSON.stringify(shortlistedRows),
+    JSON.stringify(doRecheck ? shortlistedRows : []),
   );
   rmSync(OUTPUT_PATH, { force: true });
 
@@ -109,6 +131,8 @@ async function main() {
 
   const CLAUDE_ARGS = [
     "-p",
+    "--model",
+    MODEL,
     "--output-format",
     "json",
     "--allowedTools",
@@ -185,6 +209,10 @@ async function main() {
     process.exitCode = 1;
     return;
   }
+
+  // Only a run that actually produced output counts as a recheck; a failed
+  // run leaves the timestamp alone so the next run tries Stage 0 again.
+  if (doRecheck) writeFileSync(LAST_RECHECK_PATH, startedAt);
 
   const jobs = output.jobs ?? [];
   const shortlisted = jobs.filter((j) => j.status === "shortlisted");

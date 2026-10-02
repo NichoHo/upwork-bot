@@ -24,6 +24,11 @@ export function formatScreeningAnswers(answers: ScreeningAnswer[] | null | undef
   return (answers ?? []).map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`).join("\n\n");
 }
 
+// The hunter runs every 3 hours (Task Scheduler on the hunter machine). A run
+// is overdue once a full interval plus an hour of slack has passed with none.
+export const HUNTER_INTERVAL_HOURS = 3;
+export const STALE_AFTER_MS = (HUNTER_INTERVAL_HOURS + 1) * 60 * 60 * 1000;
+
 export function isOlderThan(iso: string, ms: number): boolean {
   return Date.now() - new Date(iso).getTime() > ms;
 }

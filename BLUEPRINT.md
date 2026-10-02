@@ -45,7 +45,7 @@ Four parts. Only the dashboard is new.
 ```
   ┌──────────────────────────────────────────────┐
   │  HUNTER                                      │
-  │  Nicholas's PC, Task Scheduler, hourly       │
+  │  Nicholas's PC, Task Scheduler, every 3h     │
   │                                              │
   │  claude -p  ──►  Upwork MCP (official)       │
   │       │           search → get → score       │
@@ -87,6 +87,24 @@ detail lives in the dashboard.
 If Nicholas's PC is asleep, no jobs are found. The dashboard shows the last
 run time so this is visible rather than silent. Accepted for now. If it
 becomes a problem, the hunter moves to a small always-on box.
+
+### Run cadence
+
+Every 3 hours, around the clock. Each run costs roughly 1% of the Pro plan's
+weekly limit and 8% of a 5-hour window, so hourly (168 runs a week) would hit
+the weekly cap by day four. Every 3 hours is 56 runs a week, about half the
+weekly limit, and a new job is at most about 3 hours old when found. The
+dashboard's stale banner fires after 4 hours without a run.
+
+Registered on the hunter machine with:
+
+```
+schtasks /create /tn "Upwork Hunter" /sc hourly /mo 3 /st 07:00 /tr "node \"C:\Users\Nicholas Ho\Documents\Programming\Project\Upwork Bot\scripts\run-hunter.mjs\"" /f
+```
+
+`/f` overwrites an existing task with the same name. If the existing task has
+a different name, change its trigger in Task Scheduler instead (Triggers →
+Edit → Repeat task every 3 hours).
 
 ---
 
@@ -288,7 +306,7 @@ Edits the rubric without touching code:
 - Which account bids on which service line
 
 This is `profile.md` behind a form. The hunter reads it from the database on
-every run, so a change takes effect on the next hour.
+every run, so a change takes effect on the next run.
 
 ---
 
@@ -345,7 +363,7 @@ Every list and every panel ships four states, not one:
   link to the rejection list. Empty is the normal case here, so it must read
   as working, not broken.
 - **Error.** Inline, with the actual problem and a retry.
-- **Stale.** If the last run is over two hours old, a banner says so. Stale
+- **Stale.** If the last run is over four hours old, a banner says so. Stale
   data that looks fresh is the most dangerous state this app has.
 
 ### Anti-slop rules carried over
@@ -375,7 +393,7 @@ dashes in any visible string. Icons come from Phosphor only.
 - Service-role key stays on the local machine and never reaches the web app
 - Telegram alert on shortlisted jobs, and on failure
 
-**Done when:** an hourly run fills the database and a Telegram message arrives.
+**Done when:** a scheduled run fills the database and a Telegram message arrives.
 
 ### Phase 2 — Queue, read only
 
@@ -411,7 +429,7 @@ dashes in any visible string. Icons come from Phosphor only.
 - Expire jobs older than seven days
 - Weekly summary message
 
-**Done when:** a broken hunter is noticed within two hours.
+**Done when:** a broken hunter is noticed within four hours.
 
 ### Phase 6 — Security and hardening
 

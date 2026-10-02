@@ -1,6 +1,6 @@
 ---
 name: upwork-hunt
-description: Hourly scan of Upwork for jobs matching SkyDeck's proof, with drafted proposals for the ones worth Connects.
+description: Upwork scan every 3 hours for jobs matching SkyDeck's proof, with drafted proposals for the ones worth Connects.
 ---
 
 Scan Upwork for jobs worth bidding on, and draft proposals for the ones that clear the bar. Be strict: Connects are scarce and a mediocre proposal is worse than none.
@@ -29,7 +29,7 @@ nothing to check again). If any rule now fires, add that job's id to
 `stale_job_ids` in the output.
 
 If a `get` call fails, retry it once. If it still fails, leave that job
-alone this run rather than guessing; it gets rechecked next hour. Never
+alone this run rather than guessing; it gets rechecked on a later run. Never
 delete a job because a call failed, only because a rule actually fired on
 real data.
 

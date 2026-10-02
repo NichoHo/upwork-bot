@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { requireMember } from "@/app/actions/auth";
 import { getDraft, getEditedJobIds, getJob, getLatestRun, getRejectedToday, getShortlistedJobs } from "@/lib/queue";
-import { formatScreeningAnswers, isOlderThan } from "@/lib/format";
+import { formatScreeningAnswers, isOlderThan, STALE_AFTER_MS } from "@/lib/format";
 import { JobDetail } from "@/components/queue/job-detail";
 import { QueueShell } from "@/components/queue/queue-shell";
 import { AppShell } from "@/components/app-shell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-const STALE_AFTER_MS = 2 * 60 * 60 * 1000;
 
 export default async function QueuePage({
   searchParams,
@@ -36,7 +34,7 @@ export default async function QueuePage({
         <Alert variant="destructive" className="m-0 rounded-none border-x-0 border-t-0">
           <AlertDescription>
             Last run finished {new Date(latestRun.finished_at).toLocaleString()}. That&apos;s
-            over two hours ago; the hunter may have stopped running.
+            over four hours ago; the hunter may have stopped running.
           </AlertDescription>
         </Alert>
       )}

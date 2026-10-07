@@ -144,6 +144,12 @@ function runClaude({ label, model, prompt, tools }) {
     "manual",
     "--permission-prompts",
     "none",
+    // ~/.claude/settings.json points ANTHROPIC_BASE_URL at the local
+    // Headroom proxy, which only runs while an interactive session has
+    // started it. A plain env var can't override settings.json, so pass
+    // --settings (higher precedence) and talk to the API directly.
+    "--settings",
+    JSON.stringify({ env: { ANTHROPIC_BASE_URL: "https://api.anthropic.com" } }),
   ];
   if (tools.length) args.push("--allowedTools", tools.join(","));
 

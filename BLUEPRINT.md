@@ -113,7 +113,10 @@ the weekly cap by day four. Every 3 hours is 56 runs a week, about half the
 weekly limit, and a new job is at most about 3 hours old when found. The
 dashboard's stale banner fires after 4 hours without a run.
 
-Registered on the hunter machine with:
+Registered on the hunter machine with this command. Run it from cmd.exe, not
+PowerShell: PowerShell does not read `\"` as an escaped quote, so the task
+gets a broken path and every run exits 1 before Node starts (this stopped all
+runs from 2026-10-02 to 2026-10-07).
 
 ```
 schtasks /create /tn "Upwork Hunter" /sc hourly /mo 3 /st 07:00 /tr "wscript.exe //B \"C:\Users\Nicholas Ho\Documents\Programming\Project\Upwork Bot\scripts\run-hunter.vbs\"" /f

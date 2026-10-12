@@ -447,10 +447,9 @@ dashes in any visible string. Icons come from Phosphor only.
 
 ### Phase 5 — Reliability
 
-- Run health on the dashboard, and a Telegram alert on a missed run
+- Run health on the dashboard, and a Telegram alert on a missed run (after 5 hours of silence, repeated at most once a day)
 - Retry on a failed Upwork call, without aborting the whole run
 - Expire jobs older than seven days
-- Weekly summary message
 
 **Done when:** a broken hunter is noticed within four hours.
 
